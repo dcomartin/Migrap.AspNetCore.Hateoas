@@ -9,7 +9,8 @@
     "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-final",
     "Migrap.AspNetCore.Hateoas.Siren": "1.0.0-*",
     "Migrap.AspNetCore.Hateoas.Core": "1.0.0-*",
-    "Migrap.AspNetCore.Hateoas": "1.0.0-*"
+    "Migrap.AspNetCore.Hateoas": "1.0.0-*",
+    "Migrap.AspNetCore.Hateoas.JsonApi": "1.0.0-*"
   },
 
   "tools": {
