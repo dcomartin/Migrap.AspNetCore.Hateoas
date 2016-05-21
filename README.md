@@ -4,3 +4,4 @@ HATEOAS (Hypermedia as the Engine of Application State) framework for ASP.NET Co
 
 Current implementation(s):
 - Siren
+- JsonApi
