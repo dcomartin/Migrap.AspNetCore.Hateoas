@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Migrap.AspNetCore.Hateoas;
@@ -68,7 +69,7 @@ namespace Sandbox {
         public Task<object> ConvertAsync(StateConverterContext context) {
             var articles = (context.Object as IEnumerable<Article>);
 
-            var path = context.HttpContext.Request.Path;
+            var path = context.HttpContext.Request.GetDisplayUrl();
 
             var properties = new {
                 count = articles.Count()
@@ -84,7 +85,7 @@ namespace Sandbox {
                 return new Entity {
                     Class = new Class { "article" },
                     Properties = a,
-                    Href = path.Add(new PathString($"/{a.Id}")),
+                    Href = $"{path}/{a.Id}",
                 };
             });
 
