@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Migrap.AspNetCore.Hateoas.Siren {
     public class SirenSerializerSettingsProvider {
@@ -6,10 +7,12 @@ namespace Migrap.AspNetCore.Hateoas.Siren {
 
         public static JsonSerializerSettings CreateSerializerSettings() {
             return new JsonSerializerSettings {
+                ContractResolver = new DefaultContractResolver {
+                    NamingStrategy = new CamelCaseNamingStrategy()
+                },
                 MissingMemberHandling = MissingMemberHandling.Ignore,
                 MaxDepth = DefaultMaxDepth,
-                TypeNameHandling = TypeNameHandling.None,
-                Formatting = Formatting.Indented //TODO: may make this Indented if HostingEnvironment is Debug
+                TypeNameHandling = TypeNameHandling.None,                
             };
         }
     }

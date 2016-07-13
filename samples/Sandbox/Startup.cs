@@ -6,6 +6,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,13 @@ namespace Sandbox {
         }
 
         public void Configure(IApplicationBuilder app) {
+            app.Use((context, next) => {
+                if(context.Request.Path.StartsWithSegments("/ping")) {
+                    return context.Response.WriteAsync("pong");
+                }
+                return next();
+            });
+
             app.UseMvc();
         }
     }

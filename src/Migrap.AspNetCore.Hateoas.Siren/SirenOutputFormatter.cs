@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -12,26 +14,38 @@ using Newtonsoft.Json;
 
 namespace Migrap.AspNetCore.Hateoas.Siren {
     public class SirenOutputFormatter : JsonOutputFormatter {
-        public SirenOutputFormatter()
-            : this(SirenSerializerSettingsProvider.CreateSerializerSettings()) {
+        private JsonSerializerSettings _serializerSettings;
+        private JsonSerializer _serializer;
+
+        public SirenOutputFormatter(ArrayPool<char> charPool)
+            : this(SirenSerializerSettingsProvider.CreateSerializerSettings(), charPool) {
         }
 
-        public SirenOutputFormatter(JsonSerializerSettings serializerSettings) {
+        public SirenOutputFormatter(JsonSerializerSettings serializerSettings, ArrayPool<char> charPool)
+            : base(serializerSettings, charPool) {
+
             if(serializerSettings == null) {
                 throw new ArgumentNullException(nameof(serializerSettings));
             }
 
-            SupportedMediaTypes.Clear();
-
-            SupportedEncodings.Add(Encoding.UTF8);
+            SupportedMediaTypes.Clear();            
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationSiren);
 
-            SerializerSettings = serializerSettings;
-            SerializerSettings.Converters.Add(new HrefJsonConverter());
-            SerializerSettings.ContractResolver = new SirenCamelCasePropertyNamesContractResolver();
+            SupportedEncodings.Add(Encoding.UTF8);
+
+            _serializerSettings.Converters.Add(new HrefJsonConverter());
+            _serializerSettings.ContractResolver = new SirenCamelCasePropertyNamesContractResolver();
         }
 
         public IList<IStateConverterProvider> Converters { get; } = new List<IStateConverterProvider>();
+
+        protected override JsonSerializer CreateJsonSerializer() {
+            if(_serializer == null) {
+                _serializer = JsonSerializer.Create(_serializerSettings);
+            }
+
+            return _serializer;
+        }
 
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding) {
             var response = context.HttpContext.Response;
@@ -44,7 +58,7 @@ namespace Migrap.AspNetCore.Hateoas.Siren {
             var selectedConverter = SelectConverter(converterProviderContext, converters);
 
             if(selectedConverter == null) {
-                context.FailedContentNegotiation = true;
+                context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
                 return;
             }
 
