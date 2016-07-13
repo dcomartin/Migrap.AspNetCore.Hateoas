@@ -3,7 +3,7 @@ using Migrap.AspNetCore.Hateoas.Siren.Core;
 using Newtonsoft.Json;
 
 namespace Migrap.AspNetCore.Hateoas.Siren.Converters {
-    internal class HrefJsonConverter : JsonConverter {
+    public class HrefJsonConverter : JsonConverter {
         public override bool CanConvert(Type objectType) {
             return object.Equals(objectType, typeof(Href));
         }

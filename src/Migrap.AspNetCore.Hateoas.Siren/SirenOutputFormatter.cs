@@ -6,50 +6,40 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Migrap.AspNetCore.Hateoas.Siren.Converters;
 using Migrap.AspNetCore.Hateoas.Siren.Internal;
-using Newtonsoft.Json;
 
 namespace Migrap.AspNetCore.Hateoas.Siren {
     public class SirenOutputFormatter : JsonOutputFormatter {
-        private JsonSerializerSettings _serializerSettings;
-        private JsonSerializer _serializer;
-
-        public SirenOutputFormatter(ArrayPool<char> charPool)
-            : this(SirenSerializerSettingsProvider.CreateSerializerSettings(), charPool) {
-        }
-
-        public SirenOutputFormatter(JsonSerializerSettings serializerSettings, ArrayPool<char> charPool)
+        public SirenOutputFormatter(SirenSerializerSettings serializerSettings, IList<IStateConverterProvider> stateConverters, ArrayPool<char> charPool)
             : base(serializerSettings, charPool) {
+            
+            if(stateConverters == null) {
+                throw new ArgumentNullException(nameof(StateConverters));
+            }        
 
-            if(serializerSettings == null) {
-                throw new ArgumentNullException(nameof(serializerSettings));
-            }
-
-            SupportedMediaTypes.Clear();            
+            SupportedEncodings.Clear();
+            SupportedEncodings.Add(Encoding.UTF8);
+            SupportedMediaTypes.Clear();
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationSiren);
 
-            SupportedEncodings.Add(Encoding.UTF8);
-
-            _serializerSettings.Converters.Add(new HrefJsonConverter());
-            _serializerSettings.ContractResolver = new SirenCamelCasePropertyNamesContractResolver();
+            StateConverters = stateConverters;
         }
 
-        public IList<IStateConverterProvider> Converters { get; } = new List<IStateConverterProvider>();
-
-        protected override JsonSerializer CreateJsonSerializer() {
-            if(_serializer == null) {
-                _serializer = JsonSerializer.Create(_serializerSettings);
-            }
-
-            return _serializer;
+        public override bool CanWriteResult(OutputFormatterCanWriteContext context) {
+            var result= base.CanWriteResult(context);
+            return result;
         }
+
+        protected override bool CanWriteType(Type type) {
+            var result =  base.CanWriteType(type);
+            return result;
+        }
+
+        public IList<IStateConverterProvider> StateConverters { get; } = new List<IStateConverterProvider>();
 
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding) {
             var response = context.HttpContext.Response;
-            var converters = GetDefaultConverters(context);
+            var converters = StateConverters;
 
             var converterProviderContext = new StateConverterProviderContext {
                 ObjectType = context.ObjectType
@@ -76,22 +66,7 @@ namespace Migrap.AspNetCore.Hateoas.Siren {
                 await writer.FlushAsync();
             }
         }
-
-        private IEnumerable<IStateConverterProvider> GetDefaultConverters(OutputFormatterWriteContext context) {
-            var converters = default(IEnumerable<IStateConverterProvider>);
-
-            if(Converters == null || Converters.Count == 0) {
-                var options = context
-                    .HttpContext
-                    .RequestServices
-                    .GetRequiredService<IOptions<SirenOptions>>()
-                    .Value;
-                converters = options.Converters;
-            }
-
-            return converters;
-        }
-
+        
         public virtual IStateConverter SelectConverter(StateConverterProviderContext context, IEnumerable<IStateConverterProvider> converters) {
             return converters.Select(x => x.CreateConverter(context)).FirstOrDefault(x => x != null);
         }

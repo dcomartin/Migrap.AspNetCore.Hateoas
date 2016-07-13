@@ -5,8 +5,8 @@ namespace Migrap.AspNetCore.Hateoas.Siren {
     public class SirenSerializerSettingsProvider {
         private const int DefaultMaxDepth = 32;
 
-        public static JsonSerializerSettings CreateSerializerSettings() {
-            return new JsonSerializerSettings {
+        public static SirenSerializerSettings CreateSerializerSettings() {
+            return new SirenSerializerSettings {
                 ContractResolver = new DefaultContractResolver {
                     NamingStrategy = new CamelCaseNamingStrategy()
                 },

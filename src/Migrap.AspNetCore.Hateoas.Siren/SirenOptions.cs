@@ -2,6 +2,7 @@
 
 namespace Migrap.AspNetCore.Hateoas.Siren {
     public class SirenOptions {
-        public IList<IStateConverterProvider> Converters { get; } = new List<IStateConverterProvider>();
+        public SirenSerializerSettings SerializerSettings { get; } = SirenSerializerSettingsProvider.CreateSerializerSettings();
+        public IList<IStateConverterProvider> StateConverters { get; } = new List<IStateConverterProvider>();
     }
 }

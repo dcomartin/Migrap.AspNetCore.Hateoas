@@ -4,13 +4,12 @@
       "version": "1.0.0-rc2-3002702",
       "type": "platform"
     },
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0-rc2-final",
-    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0-rc2-final",
-    "Microsoft.AspNetCore.Mvc": "1.0.0-rc2-final",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",
+    "Microsoft.AspNetCore.Server.Kestrel": "1.0.0",
+    "Microsoft.AspNetCore.Mvc": "1.0.0",
     "Migrap.AspNetCore.Hateoas.Siren": "1.0.0-*",
     "Migrap.AspNetCore.Hateoas.Core": "1.0.0-*",
     "Migrap.AspNetCore.Hateoas": "1.0.0-*",
-    "Migrap.AspNetCore.Hateoas.JsonApi": "1.0.0-*",
     "Migrap.AspNetCore.Hateoas.Reap": "1.0.0-*"
   },
 

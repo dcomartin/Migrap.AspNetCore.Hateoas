@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -11,8 +9,6 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Migrap.AspNetCore.Hateoas;
-using Migrap.AspNetCore.Hateoas.JsonApi;
-using Migrap.AspNetCore.Hateoas.JsonApi.Core;
 using Migrap.AspNetCore.Hateoas.Siren;
 using Migrap.AspNetCore.Hateoas.Siren.Core;
 
@@ -20,14 +16,19 @@ namespace Sandbox {
     public class Startup {
         public void ConfigureServices(IServiceCollection services) {
             services.AddMvc(options => {
-                options.OutputFormatters.Clear();
-                options.OutputFormatters.Add(new SirenOutputFormatter());
-                options.OutputFormatters.Add(new JsonApiOutputFormatter());
-            }).AddSiren(options => {
-                options.Converters.Add(new ArticleSirenStateConverterProvider());
-            }).AddJsonApi(options => {
-                options.Converters.Add(new ArticleJsonApiStateConverterProvider());
+            }).AddSirenOptions(options => {
+                options.StateConverters.Add(new ArticleSirenStateConverterProvider());
             });
+
+
+            //    options.OutputFormatters.Clear();
+            //    options.OutputFormatters.Add(new SirenOutputFormatter());
+            //    options.OutputFormatters.Add(new JsonApiOutputFormatter());
+            //}).AddSiren(options => {
+            //    options.Converters.Add(new ArticleSirenStateConverterProvider());
+            //}).AddJsonApi(options => {
+            //    options.Converters.Add(new ArticleJsonApiStateConverterProvider());
+            //});
         }
 
         public void Configure(IApplicationBuilder app) {
@@ -109,58 +110,58 @@ namespace Sandbox {
         }
     }
 
-    public class ArticleJsonApiStateConverterProvider : IStateConverterProvider {
-        public IStateConverter CreateConverter(StateConverterProviderContext context) {
-            if(context == null) {
-                throw new ArgumentNullException(nameof(context));
-            }
+    //public class ArticleJsonApiStateConverterProvider : IStateConverterProvider {
+    //    public IStateConverter CreateConverter(StateConverterProviderContext context) {
+    //        if(context == null) {
+    //            throw new ArgumentNullException(nameof(context));
+    //        }
 
-            if(typeof(Article).IsAssignableFrom(context.ObjectType) || typeof(IEnumerable<Article>).IsAssignableFrom(context.ObjectType)) {
-                return new ArticleJsonApiStateConverter();
-            }
+    //        if(typeof(Article).IsAssignableFrom(context.ObjectType) || typeof(IEnumerable<Article>).IsAssignableFrom(context.ObjectType)) {
+    //            return new ArticleJsonApiStateConverter();
+    //        }
 
-            return null;
-        }
-    }
+    //        return null;
+    //    }
+    //}
 
-    public class ArticleJsonApiStateConverter : IStateConverter {
-        public Task<object> ConvertAsync(StateConverterContext context) {
-            var source = (dynamic)context.Object;
-            var document = new Migrap.AspNetCore.Hateoas.JsonApi.Core.Document();
-            var path = context.HttpContext.Request.GetDisplayUrl();
+    //public class ArticleJsonApiStateConverter : IStateConverter {
+    //    public Task<object> ConvertAsync(StateConverterContext context) {
+    //        var source = (dynamic)context.Object;
+    //        var document = new Migrap.AspNetCore.Hateoas.JsonApi.Core.Document();
+    //        var path = context.HttpContext.Request.GetDisplayUrl();
 
-            if(source is IEnumerable) {
-                document.Links(x => x.Self, $"{path}/articles/");
-                document.Links(x => x.Next, $"{path}/articles/page[offset]=2");
-                document.Links(x => x.Last, $"{path}/articles/page[offset]=10");
-                document.Data = (source as IEnumerable<Article>).Select(ConvertArticle);
-            }
-            else {
-                document.Links(x => x.Self, $"{path}/articles/{source.Id}");
-                document.Data = ConvertArticle(source as Article);
-            }
+    //        if(source is IEnumerable) {
+    //            document.Links(x => x.Self, $"{path}/articles/");
+    //            document.Links(x => x.Next, $"{path}/articles/page[offset]=2");
+    //            document.Links(x => x.Last, $"{path}/articles/page[offset]=10");
+    //            document.Data = (source as IEnumerable<Article>).Select(ConvertArticle);
+    //        }
+    //        else {
+    //            document.Links(x => x.Self, $"{path}/articles/{source.Id}");
+    //            document.Data = ConvertArticle(source as Article);
+    //        }
 
-            if(context.HttpContext.Response.StatusCode == (int)HttpStatusCode.Created) {
-                var location = context.HttpContext.Request.Path.Add((source as Article).Id);
-                context.HttpContext.Response.Headers.Add("Location", new string[] { location });
-            }
+    //        if(context.HttpContext.Response.StatusCode == (int)HttpStatusCode.Created) {
+    //            var location = context.HttpContext.Request.Path.Add((source as Article).Id);
+    //            context.HttpContext.Response.Headers.Add("Location", new string[] { location });
+    //        }
 
-            return Task.FromResult<object>(document);
-        }
+    //        return Task.FromResult<object>(document);
+    //    }
 
-        private static Migrap.AspNetCore.Hateoas.JsonApi.Core.Data ConvertArticle(Article article) {
-            var data = new Migrap.AspNetCore.Hateoas.JsonApi.Core.Data("articles", article.Id);
+    //    private static Migrap.AspNetCore.Hateoas.JsonApi.Core.Data ConvertArticle(Article article) {
+    //        var data = new Migrap.AspNetCore.Hateoas.JsonApi.Core.Data("articles", article.Id);
 
-            data.Attributes(x => {
-                x.Body = article.Body;
-                x.Created = article.Created;
-                x.Title = article.Title;
-                x.Updated = article.Updated;
-            });
+    //        data.Attributes(x => {
+    //            x.Body = article.Body;
+    //            x.Created = article.Created;
+    //            x.Title = article.Title;
+    //            x.Updated = article.Updated;
+    //        });
 
-            return data;
-        }
-    }
+    //        return data;
+    //    }
+    //}
 
     public class Article {
         public Article() {
