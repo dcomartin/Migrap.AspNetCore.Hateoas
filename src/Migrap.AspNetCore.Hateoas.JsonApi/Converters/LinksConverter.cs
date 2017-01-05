@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace Migrap.AspNetCore.Hateoas.JsonApi.Converters {
     internal class LinksConverter : JsonConverter {
         public override bool CanConvert(Type objectType) {
-            return typeof(IEnumerable<Link>).IsAssignableFrom(objectType);
+            return typeof(IEnumerable<Link>).GetTypeInfo().IsAssignableFrom(objectType);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {

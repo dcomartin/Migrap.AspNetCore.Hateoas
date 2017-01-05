@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -11,23 +13,12 @@ using Newtonsoft.Json;
 
 namespace Migrap.AspNetCore.Hateoas.JsonApi {
     public class JsonApiOutputFormatter : JsonOutputFormatter {
-        public JsonApiOutputFormatter()
-            : this(JsonApiSerializerSettingsProvider.Create()) {
-        }
-
-        public JsonApiOutputFormatter(JsonSerializerSettings serializerSettings) {
-            if(serializerSettings == null) {
-                throw new ArgumentNullException(nameof(serializerSettings));
-            }
+        public JsonApiOutputFormatter(JsonSerializerSettings serializerSettings, ArrayPool<char> charPool)
+            : base(serializerSettings, charPool) {             
 
             SupportedMediaTypes.Clear();
-
             SupportedEncodings.Add(Encoding.UTF8);
-            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationSiren);
-
-            SerializerSettings = serializerSettings;
-            //SerializerSettings.Converters.Add(new HrefJsonConverter());
-            //SerializerSettings.ContractResolver = new SirenCamelCasePropertyNamesContractResolver();
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationSiren);                        
         }
 
         public IList<IStateConverterProvider> Converters { get; } = new List<IStateConverterProvider>();
@@ -42,8 +33,8 @@ namespace Migrap.AspNetCore.Hateoas.JsonApi {
 
             var selectedConverter = SelectConverter(converterProviderContext, converters);
 
-            if(selectedConverter == null) {
-                context.FailedContentNegotiation = true;
+            if (selectedConverter == null) {
+                context.HttpContext.Response.StatusCode = StatusCodes.Status406NotAcceptable;
                 return;
             }
 

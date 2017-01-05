@@ -12,17 +12,13 @@ namespace Migrap.AspNetCore.Hateoas.Siren {
     public class SirenOutputFormatter : JsonOutputFormatter {
         public SirenOutputFormatter(SirenSerializerSettings serializerSettings, IList<IStateConverterProvider> stateConverters, ArrayPool<char> charPool)
             : base(serializerSettings, charPool) {
-            
-            if(stateConverters == null) {
-                throw new ArgumentNullException(nameof(StateConverters));
-            }        
+
+            StateConverters = stateConverters ?? throw new ArgumentNullException(nameof(StateConverters));
 
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedMediaTypes.Clear();
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationSiren);
-
-            StateConverters = stateConverters;
         }
 
         public override bool CanWriteResult(OutputFormatterCanWriteContext context) {
